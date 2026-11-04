@@ -181,7 +181,7 @@ export default function NewProject() {
               <img src={asset("img/lock.png")} alt="" className="h-10 w-10" />
               <div>
                 <div className="font-display text-xl">Разрешение владельца</div>
-                <div className="text-sm text-mute">Главное правило VULNEX: проверка только с разрешения и только в границах.</div>
+                <div className="text-sm text-mute">Главное правило FortEra: проверка только с разрешения и только в границах.</div>
               </div>
             </div>
             {(

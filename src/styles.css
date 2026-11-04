@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Same palette as the VULNEX deck: graphite, white type, one cold cyan accent. */
+/* Same palette as the FortEra deck: graphite, white type, one cold cyan accent. */
 @theme {
   --color-ink: #0a0c10;
   --color-ink2: #0e1117;

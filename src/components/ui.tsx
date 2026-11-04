@@ -3,14 +3,14 @@ import { useEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode 
 import { Link } from "react-router-dom";
 import { SEV_LABEL, type Severity } from "../ai/types";
 
-/** Path to a file in public/, correct both locally and under /vulnex/ on GitHub Pages. */
+/** Path to a file in public/, correct both locally and under a sub-path. */
 export const asset = (p: string) => import.meta.env.BASE_URL + p.replace(/^\//, "");
 
 export function Logo({ small = false }: { small?: boolean }) {
   return (
     <span className="inline-flex items-center gap-2.5">
       <img src={asset("img/lock.png")} alt="" className={small ? "h-6 w-6" : "h-7 w-7"} />
-      <span className={clsx("font-display tracking-[0.32em] text-text", small ? "text-[15px]" : "text-[17px]")}>VULNEX</span>
+      <span className={clsx("font-display tracking-[0.04em] text-text", small ? "text-[15px]" : "text-[17px]")}>FortEra</span>
     </span>
   );
 }

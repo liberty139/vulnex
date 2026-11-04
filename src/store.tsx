@@ -25,7 +25,7 @@ interface Saved {
   nick: string;
 }
 
-const KEY = "vulnex.v1";
+const KEY = "fortera.v1";
 
 const fresh = (): Saved => ({
   role: "startup",

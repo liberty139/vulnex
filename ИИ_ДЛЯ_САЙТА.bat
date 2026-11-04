@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul
-title VULNEX - ИИ для сайта
+title FortEra - ИИ для сайта
 echo Перезапускаю Ollama с разрешением для https://vulnex-00v9.onrender.com ...
 taskkill /IM "ollama app.exe" /F >nul 2>&1
 taskkill /IM ollama.exe /F >nul 2>&1

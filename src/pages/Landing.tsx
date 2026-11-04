@@ -6,7 +6,6 @@ import {
   ChevronRight,
   ClipboardCheck,
   Cpu,
-  Download,
   ExternalLink,
   FileSearch,
   GraduationCap,
@@ -71,9 +70,6 @@ function Nav() {
           ))}
         </nav>
         <div className="ml-auto hidden items-center gap-3 sm:flex">
-          <Button variant="subtle" size="sm" href={asset("VULNEX-presentation.pdf")}>
-            Презентация
-          </Button>
           <Button to="/app" size="sm">
             Открыть платформу <ArrowRight className="h-3.5 w-3.5" />
           </Button>
@@ -100,7 +96,7 @@ function Nav() {
 
 /** A scripted scan shown in the hero: an illustration, labelled as such. */
 const SCRIPT: { t: string; c?: string; d: number }[] = [
-  { t: "$ vulnex scan ./clinic-staging", c: "text-text", d: 500 },
+  { t: "$ fortera scan ./clinic-staging", c: "text-text", d: 500 },
   { t: "✓ разрешение владельца подтверждено", c: "text-low", d: 600 },
   { t: "✓ границы: кабинет пациента, запись, вход по SMS", c: "text-low", d: 500 },
   { t: "→ правила: 2 совпадения за 0,04 с", c: "text-mute", d: 700 },
@@ -150,14 +146,14 @@ function Hero() {
           </Reveal>
           <Reveal delay={80}>
             <h1 className="font-display text-[44px] leading-[1.02] sm:text-[64px] lg:text-[76px]">
-              Создавай смело.
+              Безопасность
               <br />
-              <span className="text-acc">Защищай разумно.</span>
+              <span className="text-acc">каждой идее.</span>
             </h1>
           </Reveal>
           <Reveal delay={160}>
             <p className="mt-7 max-w-xl text-[17px] leading-relaxed text-mute sm:text-lg">
-              VULNEX соединяет стартапы и небольшие IT-команды, которым нужна доступная проверка безопасности, с начинающими специалистами,
+              FortEra соединяет стартапы и небольшие IT-команды, которым нужна доступная проверка безопасности, с начинающими специалистами,
               которым нужны реальная практика и подтверждённая репутация.
             </p>
           </Reveal>
@@ -225,7 +221,7 @@ function Problem() {
         <Reveal>
           <p className="mt-8 max-w-3xl text-[13px] text-dim">
             «Почти 70%» — это доля сайтов, работающих на PHP, а не число взломанных: все они оказались под угрозой и требовали срочного
-            обновления. Bybit — пример масштаба последствий, а не случай, который предотвратила бы платформа.
+            обновления. Binance и Bybit — примеры масштаба последствий, а не случаи, которые предотвратила бы платформа.
           </p>
         </Reveal>
       </div>
@@ -270,7 +266,7 @@ function Sides() {
         <Reveal>
           <p className="mx-auto mt-14 max-w-3xl text-center text-xl leading-relaxed text-mute sm:text-2xl">
             Одним нужна доступная проверка безопасности. Другим — возможность доказать свои навыки.{" "}
-            <span className="font-display text-acc">VULNEX объединяет их.</span>
+            <span className="font-display text-acc">FortEra объединяет их.</span>
           </p>
         </Reveal>
       </div>
@@ -502,16 +498,13 @@ function Finale() {
           </p>
         </Reveal>
         <Reveal delay={150}>
-          <div className="mt-14 font-display text-[44px] tracking-[0.3em] text-text sm:text-[60px]">VULNEX</div>
-          <div className="font-light-d mt-2 text-xl text-mute sm:text-2xl">Создавай смело. Защищай разумно.</div>
+          <div className="mt-14 font-display text-[44px] tracking-[0.02em] text-text sm:text-[64px]">FortEra</div>
+          <div className="font-light-d mt-2 text-xl text-mute sm:text-2xl">Безопасность каждой идее.</div>
         </Reveal>
         <Reveal delay={250}>
           <div className="mt-10 flex flex-wrap justify-center gap-3">
             <Button to="/app" size="lg">
               Открыть платформу <ArrowRight className="h-4 w-4" />
-            </Button>
-            <Button href={asset("VULNEX-presentation.pdf")} size="lg" variant="ghost">
-              <Download className="h-4 w-4" /> Презентация (PDF)
             </Button>
           </div>
         </Reveal>

@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
 cd /d "%~dp0"
-title VULNEX
+title FortEra
 if not exist node_modules (
   echo Первый запуск: устанавливаю зависимости, нужен интернет...
   call npm install --no-audit --no-fund
@@ -12,7 +12,7 @@ if errorlevel 1 (
   start "Ollama" /min ollama serve
 )
 echo.
-echo  VULNEX запускается. Браузер откроется сам: http://localhost:5190
+echo  FortEra запускается. Браузер откроется сам: http://localhost:5190
 echo  Чтобы остановить сайт, закройте это окно.
 echo.
 call npx vite --port 5190 --open /

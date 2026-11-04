@@ -122,7 +122,7 @@ export default function AppShell() {
         ))}
       </nav>
       <div className="rounded-xl border border-line bg-ink2 p-3 text-[11.5px] leading-relaxed text-dim">
-        Прототип VULNEX. Данные хранятся в этом браузере, проекты и отчёты с пометкой «демо» вымышлены.
+        Прототип FortEra. Данные хранятся в этом браузере, проекты и отчёты с пометкой «демо» вымышлены.
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 # Render Blueprint: a free static site built from this repo.
 services:
   - type: web
-    name: vulnex
+    name: fortera
     runtime: static
     buildCommand: npm install --no-audit --no-fund && npm run build
     staticPublishPath: dist
