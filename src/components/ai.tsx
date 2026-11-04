@@ -50,8 +50,12 @@ export function ModelPicker({ compact = false, single = false }: { compact?: boo
             : код не уходит в облако. Установите Ollama, скачайте модель{" "}
             <code className="rounded bg-ink px-1.5 py-0.5 font-mono text-xs text-acc">ollama pull qwen2.5:7b</code> и запустите её с разрешением для
             этого сайта:{" "}
-            <code className="rounded bg-ink px-1.5 py-0.5 font-mono text-xs text-acc">OLLAMA_ORIGINS={location.origin}</code>. Если браузер спросит
-            доступ к устройствам в локальной сети — разрешите. Правила (без ИИ) и демо работают и так.
+            <code className="rounded bg-ink px-1.5 py-0.5 font-mono text-xs text-acc">OLLAMA_ORIGINS={location.origin}</code>. Правила (без ИИ) и
+            демо работают и так.
+            <span className="mt-2 block text-[12.5px]">
+              Ollama запущена, но ИИ не виден? Браузер не пускает сайт к приложениям на компьютере: нажмите значок настроек слева от адреса
+              сайта → разрешите доступ к <b className="text-text">локальной сети / приложениям на этом устройстве</b> → обновите страницу.
+            </span>
           </p>
         ) : (
           <p className="text-mute">
