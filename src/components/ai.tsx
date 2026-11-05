@@ -17,7 +17,7 @@ export function OllamaPill() {
   if (!ollama.online)
     return (
       <Badge tone="crit">
-        <TriangleAlert className="h-3 w-3" /> Ollama не запущена
+        <TriangleAlert className="h-3 w-3" /> {LIVE ? "ИИ просыпается…" : "Ollama не запущена"}
       </Badge>
     );
   const local = models.filter((m) => describe(m).local).length;
@@ -39,23 +39,12 @@ export function ModelPicker({ compact = false, single = false }: { compact?: boo
     return (
       <div className="rounded-xl border border-crit/30 bg-crit/5 p-4 text-sm">
         <div className="mb-1 flex items-center gap-2 font-medium text-crit">
-          <TriangleAlert className="h-4 w-4" /> Ollama не запущена
+          <TriangleAlert className="h-4 w-4" /> {LIVE ? "ИИ-сервер ещё не ответил" : "Ollama не запущена"}
         </div>
         {LIVE ? (
           <p className="text-mute">
-            ИИ-модули работают на вашем компьютере через{" "}
-            <a href="https://ollama.com/download" target="_blank" rel="noreferrer" className="text-acc hover:underline">
-              Ollama
-            </a>
-            : код не уходит в облако. Установите Ollama, скачайте модель{" "}
-            <code className="rounded bg-ink px-1.5 py-0.5 font-mono text-xs text-acc">ollama pull qwen2.5:7b</code> и запустите её с разрешением для
-            этого сайта:{" "}
-            <code className="rounded bg-ink px-1.5 py-0.5 font-mono text-xs text-acc">OLLAMA_ORIGINS={location.origin}</code>. Правила (без ИИ) и
-            демо работают и так.
-            <span className="mt-2 block text-[12.5px]">
-              Ollama запущена, но ИИ не виден? Браузер не пускает сайт к приложениям на компьютере: нажмите значок настроек слева от адреса
-              сайта → разрешите доступ к <b className="text-text">локальной сети / приложениям на этом устройстве</b> → обновите страницу.
-            </span>
+            ИИ-сервер Fortera просыпается — бесплатный хостинг засыпает без посетителей. Подождите 30–60 секунд и нажмите «Проверить снова». Правила
+            (без ИИ) работают и так.
           </p>
         ) : (
           <p className="text-mute">
@@ -145,7 +134,7 @@ export function ModelPicker({ compact = false, single = false }: { compact?: boo
       )}
       {anyCloud && (
         <p className="rounded-lg border border-med/30 bg-med/5 px-3 py-2 text-xs text-med">
-          Облачная модель получит текст запроса. Для кода стартапа без согласия владельца оставляйте только локальные.
+          {LIVE ? "На сайте ИИ работает через Ollama Cloud — открытые модели в облаке. Для приватного кода есть локальная версия, где код не покидает компьютер." : "Облачная модель получит текст запроса. Для кода стартапа без согласия владельца оставляйте только локальные."}
         </p>
       )}
       {models.length === 0 && <p className="text-xs text-high">Выберите хотя бы одну модель.</p>}

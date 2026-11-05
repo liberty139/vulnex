@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { DEFAULT_MODELS, status as ollamaStatus, type OllamaStatus } from "./ai/ollama";
+import { DEFAULT_MODELS, PREFERRED, status as ollamaStatus, type OllamaStatus } from "./ai/ollama";
 import { SEV_POINTS } from "./ai/types";
 import { DEMO_PROJECTS, DEMO_REPORTS, type Project, type Report, type ReportStatus } from "./data";
 
@@ -82,7 +82,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshOllama = useCallback(async () => {
-    setOllama(await ollamaStatus());
+    const st = await ollamaStatus();
+    setOllama(st);
+    if (!st.online || !st.models.length) return;
+    const names = st.models.map((m) => m.name);
+    // keep the saved choice if it exists here, otherwise pick a working model
+    setS((p) => {
+      const keep = p.models.filter((m) => names.includes(m));
+      if (keep.length === p.models.length && keep.length) return p;
+      if (keep.length) return { ...p, models: keep };
+      return { ...p, models: [PREFERRED.find((m) => names.includes(m)) ?? names[0]] };
+    });
   }, []);
 
   useEffect(() => {

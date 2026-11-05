@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { describe } from "../ai/ollama";
+import { LIVE, describe } from "../ai/ollama";
 import { Badge, Button, Card, Eyebrow, Logo, Reveal, asset } from "../components/ui";
 import { FACTS } from "../data";
 import { useStore } from "../store";
@@ -173,7 +173,7 @@ function Hero() {
                 <Lock className="h-4 w-4 text-acc" /> Только с разрешения владельца
               </span>
               <span className="flex items-center gap-2">
-                <Cpu className="h-4 w-4 text-acc" /> ИИ работает локально
+                <Cpu className="h-4 w-4 text-acc" /> {LIVE ? "ИИ на открытых моделях" : "ИИ работает локально"}
               </span>
               <span className="flex items-center gap-2">
                 <GraduationCap className="h-4 w-4 text-acc" /> Путь от обучения к опыту
@@ -335,7 +335,7 @@ function AiSection() {
                 <span className="text-acc">Решает человек.</span>
               </h2>
               <p className="mt-6 max-w-xl text-[16.5px] leading-relaxed text-mute">
-                Модели работают прямо на компьютере через Ollama — код стартапа не уходит в чужое облако. Несколько моделей смотрят на одну задачу
+                {LIVE ? "На сайте открытые модели работают через Ollama Cloud, а в локальной версии — прямо на компьютере, и код стартапа не уходит в облако." : "Модели работают прямо на компьютере через Ollama — код стартапа не уходит в чужое облако."} Несколько моделей смотрят на одну задачу
                 независимо, а каждую находку подтверждает специалист. ИИ не заменяет людей и не обещает абсолютной безопасности.
               </p>
             </Reveal>

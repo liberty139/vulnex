@@ -9,7 +9,12 @@
 
 /** True on the published site, false when run from ЗАПУСК.bat. */
 export const LIVE = !import.meta.env.DEV;
-export const BASE = LIVE ? "http://127.0.0.1:11434" : "/ollama";
+/**
+ * Published site: the Fortera AI relay (api/server.mjs on Render) forwards to
+ * Ollama Cloud with a server-side key, so AI works for every visitor.
+ * Local run: the Vite proxy to the Ollama on this computer.
+ */
+export const BASE = LIVE ? ((import.meta.env.VITE_AI_URL as string | undefined) ?? "https://fortera-ai.onrender.com/ollama") : "/ollama";
 
 export interface AiModel {
   name: string;
@@ -31,17 +36,21 @@ export const KNOWN: AiModel[] = [
   { name: "nemotron-3-nano:30b-cloud", label: "Nemotron 3 Nano", vendor: "NVIDIA · Ollama Cloud", local: false },
 ];
 
-export const DEFAULT_MODELS = ["qwen2.5:7b"];
+export const DEFAULT_MODELS = LIVE ? ["gpt-oss:20b"] : ["qwen2.5:7b"];
+/** Preferred order when the saved choice is not available (fast first). */
+export const PREFERRED = ["gpt-oss:20b", "qwen2.5:7b", "gpt-oss:120b", "gemma4:31b", "llama3:latest", "nemotron-3-nano:30b", "nemotron-3-super"];
+
+const bare = (n: string) => n.replace(/-cloud$|:cloud$/, "");
 
 export function describe(name: string): AiModel {
-  const known = KNOWN.find((m) => m.name === name);
-  if (known) return known;
+  const known = KNOWN.find((m) => m.name === name) ?? KNOWN.find((m) => bare(m.name) === bare(name));
+  if (known) return LIVE ? { ...known, name, local: false, vendor: known.vendor.replace(" · Ollama Cloud", "") + " · облако" } : { ...known, name };
   const base = name.split(":")[0];
   return {
     name,
     label: base.charAt(0).toUpperCase() + base.slice(1),
-    vendor: "Ollama",
-    local: !name.includes("cloud"),
+    vendor: LIVE ? "Ollama Cloud" : "Ollama",
+    local: !LIVE && !name.includes("cloud"),
   };
 }
 
@@ -54,19 +63,22 @@ export interface OllamaStatus {
   loaded: string[];
 }
 
+// the free relay sleeps when idle and takes up to a minute to wake
+const WAIT = LIVE ? 75000 : 4000;
+
 export async function status(): Promise<OllamaStatus> {
   try {
     const [tags, ps, ver] = await Promise.all([
-      fetch(`${BASE}/api/tags`, { signal: AbortSignal.timeout(4000) }).then((r) => r.json()),
-      fetch(`${BASE}/api/ps`, { signal: AbortSignal.timeout(4000) })
+      fetch(`${BASE}/api/tags`, { signal: AbortSignal.timeout(WAIT) }).then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); }),
+      fetch(`${BASE}/api/ps`, { signal: AbortSignal.timeout(WAIT) })
         .then((r) => r.json())
         .catch(() => ({ models: [] })),
-      fetch(`${BASE}/api/version`, { signal: AbortSignal.timeout(4000) })
+      fetch(`${BASE}/api/version`, { signal: AbortSignal.timeout(WAIT) })
         .then((r) => r.json())
         .catch(() => ({})),
     ]);
     const order = (n: string) => {
-      const i = KNOWN.findIndex((m) => m.name === n);
+      const i = PREFERRED.indexOf(n);
       return i === -1 ? 99 : i;
     };
     const models = (tags.models as { name: string; size: number }[])
