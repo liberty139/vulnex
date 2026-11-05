@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { Cpu, FileCode2, Play, ShieldAlert, Square, Wand2, Wrench } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
-import { describe, label, type Progress } from "../../ai/ollama";
+import { LIVE, describe, label, type Progress } from "../../ai/ollama";
 import { merge, scanRules, scanWithModel } from "../../ai/tasks";
 import type { CodeFinding, MergedFinding, Severity } from "../../ai/types";
 import { ModelPicker, RunBoard, type RunState } from "../../components/ai";
@@ -199,7 +199,7 @@ export default function Scan() {
               )}
             </div>
             <p className="mt-3 text-[11.5px] leading-relaxed text-dim">
-              Локальная модель на процессоре ноутбука отвечает за 30–90 секунд. Правила срабатывают мгновенно.
+              {LIVE ? "Облачная модель отвечает за несколько секунд. Правила срабатывают мгновенно." : "Локальная модель на процессоре ноутбука отвечает за 30–90 секунд. Правила срабатывают мгновенно."}
             </p>
           </Card>
           {(rules || busy) && (

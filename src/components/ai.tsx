@@ -120,12 +120,14 @@ export function ModelPicker({ compact = false, single = false }: { compact?: boo
 
   return (
     <div className="space-y-3">
-      <div>
-        <div className="mb-1.5 flex items-center justify-between text-[11px] uppercase tracking-wider text-dim">
-          <span>Локальные — код не покидает компьютер</span>
+      {!LIVE && (
+        <div>
+          <div className="mb-1.5 flex items-center justify-between text-[11px] uppercase tracking-wider text-dim">
+            <span>Локальные — код не покидает компьютер</span>
+          </div>
+          <div className="space-y-1.5">{local.length ? local.map(row) : <p className="text-xs text-dim">Локальных моделей нет: ollama pull qwen2.5:7b</p>}</div>
         </div>
-        <div className="space-y-1.5">{local.length ? local.map(row) : <p className="text-xs text-dim">Локальных моделей нет: ollama pull qwen2.5:7b</p>}</div>
-      </div>
+      )}
       {cloud.length > 0 && (
         <div>
           <div className="mb-1.5 text-[11px] uppercase tracking-wider text-dim">Облачные · Ollama Cloud</div>

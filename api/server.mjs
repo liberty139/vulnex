@@ -16,7 +16,8 @@ const ORIGINS = (process.env.ALLOW_ORIGINS || "https://fortera-16k9.onrender.com
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
-const MODELS = ["gpt-oss:20b", "gpt-oss:120b", "gemma4:31b", "nemotron-3-super", "nemotron-3-nano:30b"];
+// only models verified to return proper Russian JSON through the cloud API (2026-11-05)
+const MODELS = ["gemma4:31b", "gpt-oss:120b"];
 const MAX_BODY = 200_000;
 const MAX_TOKENS = 1400;
 
