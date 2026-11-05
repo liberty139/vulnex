@@ -17,6 +17,27 @@ const ROLE =
 
 const sevEnum = { type: "string", enum: SEVERITIES };
 
+
+/* ---- tolerant readers: cloud models rename keys and change case ---- */
+type Loose = Record<string, unknown>;
+const flat = (k: string) => k.toLowerCase().replace(/[_\s-]/g, "");
+function pick(o: unknown, keys: string[]): unknown {
+  if (!o || typeof o !== "object") return undefined;
+  const m = new Map(Object.entries(o as Loose).map(([k, v]) => [flat(k), v]));
+  for (const k of keys) if (m.has(flat(k))) return m.get(flat(k));
+  return undefined;
+}
+const arr = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
+const str = (v: unknown) => (typeof v === "string" ? v : v == null ? "" : typeof v === "object" ? String(Object.values(v as Loose)[0] ?? "") : String(v));
+const strs = (v: unknown) => arr(v).map(str).map((x) => x.trim()).filter(Boolean);
+export function normSev(v: unknown): Severity {
+  const t = String(v ?? "").toLowerCase();
+  if (/crit|крит/.test(t)) return "critical";
+  if (/high|высок/.test(t)) return "high";
+  if (/low|низк/.test(t)) return "low";
+  return "medium";
+}
+
 /* -------------------------------------------------------------- code scan */
 
 const SCAN_SCHEMA = {
@@ -79,9 +100,21 @@ export async function scanWithModel(
   });
   if (res.data) {
     const max = code.split("\n").length;
-    res.data.findings = (res.data.findings ?? [])
-      .filter((f) => f && typeof f.title === "string" && SEVERITIES.includes(f.severity))
-      .map((f) => ({ ...f, line: Math.min(Math.max(1, Math.round(Number(f.line) || 1)), max), cwe: normCwe(f.cwe) }));
+    const raw = res.data as unknown;
+    const list = arr(pick(raw, ["findings", "vulnerabilities", "issues", "items", "уязвимости", "находки"]));
+    res.data = {
+      summary: str(pick(raw, ["summary", "итог", "вывод"])),
+      findings: list
+        .map((f) => ({
+          line: Math.min(Math.max(1, Math.round(Number(pick(f, ["line", "строка"])) || 1)), max),
+          title: str(pick(f, ["title", "name", "issue", "название"])),
+          severity: normSev(pick(f, ["severity", "level", "risk", "серьёзность"])),
+          cwe: normCwe(str(pick(f, ["cwe", "cwe_id", "id"]))),
+          why: str(pick(f, ["why", "description", "reason", "details", "почему"])),
+          fix: str(pick(f, ["fix", "recommendation", "remediation", "solution", "исправление"])),
+        }))
+        .filter((f) => f.title),
+    };
   }
   return res;
 }
@@ -178,7 +211,19 @@ export function draftScope(
     "outOfScope — что не трогать (3–4 пункта, например рабочие данные клиентов, сторонние сервисы, платёжный шлюз); " +
     "allowed — разрешённые действия (3–4 пункта); forbidden — запрещённые (3–5 пунктов: нагрузочные атаки, социальная инженерия, " +
     "доступ к реальным данным и т. п.); focus — 2–3 места, где у такого продукта чаще всего бывают проблемы. Каждый пункт — до 12 слов.";
-  return runJSON<ScopeDraft>(model, ROLE, user, SCOPE_SCHEMA, { onProgress, numPredict: 700 });
+  return runJSON<ScopeDraft>(model, ROLE, user, SCOPE_SCHEMA, { onProgress, numPredict: 700 }).then((r) => {
+    if (r.data) {
+      const d = r.data as unknown;
+      r.data = {
+        inScope: strs(pick(d, ["inScope", "in_scope", "scope", "проверять"])),
+        outOfScope: strs(pick(d, ["outOfScope", "out_of_scope", "exclude", "не трогать"])),
+        allowed: strs(pick(d, ["allowed", "permitted", "разрешено"])),
+        forbidden: strs(pick(d, ["forbidden", "prohibited", "запрещено"])),
+        focus: strs(pick(d, ["focus", "focusAreas", "фокус"])),
+      };
+    }
+    return r;
+  });
 }
 
 /* --------------------------------------------------------- report review */
@@ -232,7 +277,22 @@ export function reviewReport(model: string, r: ReportDraft, onProgress?: (p: Pro
     "«Влияние на бизнес», «Доказательства», «В границах проверки»; ok — выполнено ли, hint — что добавить или почему хорошо (до 15 слов). " +
     "severity — твоя оценка серьёзности, severityWhy — почему (одно предложение). title — улучшенный заголовок до 10 слов. " +
     "ownerSummary — 2 предложения для основателя без технических терминов: что не так и чем грозит.";
-  return runJSON<ReportReview>(model, ROLE, user, REVIEW_SCHEMA, { onProgress, numPredict: 700 });
+  return runJSON<ReportReview>(model, ROLE, user, REVIEW_SCHEMA, { onProgress, numPredict: 700 }).then((r) => {
+    if (r.data) {
+      const d = r.data as unknown;
+      r.data = {
+        checklist: arr(pick(d, ["checklist", "check", "items"])).map((c) => {
+          const ok = pick(c, ["ok", "done", "passed"]);
+          return { item: str(pick(c, ["item", "name", "title"])), ok: ok === true || /true|да|yes/i.test(String(ok)), hint: str(pick(c, ["hint", "comment", "note"])) };
+        }),
+        severity: normSev(pick(d, ["severity", "level"])),
+        severityWhy: str(pick(d, ["severityWhy", "severity_why", "reason"])),
+        ownerSummary: str(pick(d, ["ownerSummary", "owner_summary", "summary"])),
+        title: str(pick(d, ["title", "betterTitle"])),
+      };
+    }
+    return r;
+  });
 }
 
 /* ------------------------------------------------- explain to the owner */
@@ -260,7 +320,18 @@ export function explainForOwner(model: string, r: ReportDraft, onProgress?: (p: 
     `Специалист прислал отчёт владельцу стартапа. Владелец не разбирается в безопасности.\n\n${reportText(r)}\n\n` +
     "plain — объясни суть в 2–3 простых предложениях, можно с бытовой аналогией. risk — чем это грозит бизнесу и пользователям (1–2 предложения). " +
     "urgency — насколько срочно исправлять. steps — 3–5 конкретных шагов исправления для разработчика.";
-  return runJSON<OwnerExplain>(model, ROLE, user, EXPLAIN_SCHEMA, { onProgress, numPredict: 600 });
+  return runJSON<OwnerExplain>(model, ROLE, user, EXPLAIN_SCHEMA, { onProgress, numPredict: 600 }).then((r) => {
+    if (r.data) {
+      const d = r.data as unknown;
+      r.data = {
+        plain: str(pick(d, ["plain", "explanation", "summary"])),
+        risk: str(pick(d, ["risk", "impact"])),
+        urgency: str(pick(d, ["urgency", "priority"])) || "на этой неделе",
+        steps: strs(pick(d, ["steps", "fix", "fixSteps", "recommendations"])),
+      };
+    }
+    return r;
+  });
 }
 
 /* ------------------------------------------------------------- mentor */

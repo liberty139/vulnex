@@ -36,9 +36,10 @@ export const KNOWN: AiModel[] = [
   { name: "nemotron-3-nano:30b-cloud", label: "Nemotron 3 Nano", vendor: "NVIDIA · Ollama Cloud", local: false },
 ];
 
-export const DEFAULT_MODELS = LIVE ? ["gpt-oss:20b"] : ["qwen2.5:7b"];
+export const DEFAULT_MODELS = LIVE ? ["gemma4:31b"] : ["qwen2.5:7b"];
 /** Preferred order when the saved choice is not available (fast first). */
-export const PREFERRED = ["gpt-oss:20b", "qwen2.5:7b", "gpt-oss:120b", "gemma4:31b", "llama3:latest", "nemotron-3-nano:30b", "nemotron-3-super"];
+// on the site Gemma 4 keeps Russian and the JSON shape best (tested 2026-11-05)
+export const PREFERRED = LIVE ? ["gemma4:31b", "gpt-oss:120b", "gpt-oss:20b", "nemotron-3-super", "nemotron-3-nano:30b"] : ["qwen2.5:7b", "llama3:latest"];
 
 const bare = (n: string) => n.replace(/-cloud$|:cloud$/, "");
 
@@ -204,11 +205,28 @@ export async function stream(
  */
 export const stripCJK = (t: string) => t.replace(/[　-ヿ㐀-鿿豈-﫿＀-￯]+/g, "");
 
+// Cloud models do not always honour `format`: strip fences, accept a bare array.
 function parseJSON<T>(content: string): T {
-  const cleaned = content.replace(/^```(?:json)?/m, "").replace(/```\s*$/m, "").trim();
-  const start = cleaned.indexOf("{");
-  const end = cleaned.lastIndexOf("}");
-  return JSON.parse(cleaned.slice(start, end + 1)) as T;
+  const cleaned = content.replace(/```(?:json)?/gi, "").trim();
+  const obj = cleaned.indexOf("{");
+  const arr = cleaned.indexOf("[");
+  const isArr = arr !== -1 && (obj === -1 || arr < obj);
+  const start = isArr ? arr : obj;
+  const end = isArr ? cleaned.lastIndexOf("]") : cleaned.lastIndexOf("}");
+  const v = JSON.parse(cleaned.slice(start, end + 1));
+  return (Array.isArray(v) ? { items: v } : v) as T;
+}
+
+/** An example object built from a JSON schema, so the model sees the exact keys. */
+function skeleton(s: unknown): unknown {
+  const o = s as { type?: string; enum?: string[]; properties?: Record<string, unknown>; items?: unknown };
+  if (!o || typeof o !== "object") return "";
+  if (o.enum) return o.enum.join("|");
+  if (o.type === "object") return Object.fromEntries(Object.entries(o.properties ?? {}).map(([k, v]) => [k, skeleton(v)]));
+  if (o.type === "array") return [skeleton(o.items)];
+  if (o.type === "integer" || o.type === "number") return 0;
+  if (o.type === "boolean") return true;
+  return "…";
 }
 
 /** One structured request: the model must answer with JSON matching `schema`. */
@@ -225,7 +243,7 @@ export async function runJSON<T>(
       model,
       [
         { role: "system", content: system },
-        { role: "user", content: user },
+        { role: "user", content: `${user}\n\nОтветь ОДНИМ JSON-объектом без markdown, ключи строго такие (значения — по-русски): ${JSON.stringify(skeleton(schema))}` },
       ],
       { format: schema, signal: opts.signal, numPredict: opts.numPredict, temperature: 0, onProgress: opts.onProgress },
     );
